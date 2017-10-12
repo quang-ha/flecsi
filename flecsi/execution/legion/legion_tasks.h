@@ -467,7 +467,7 @@ __flecsi_internal_legion_task(ghost_copy_task, void) {
       if (fid !=ghost_owner_pos_fid){ 
         auto acc_ghost = regions[i].get_field_accessor(fid);
 
-        for(size_t j = 0; j < is.num_owners; ++j){
+        for(size_t j = 0; j < num_owners; ++j){
           size_t owner_region = is.owner_regions[j];
 
           // Look up field info in context

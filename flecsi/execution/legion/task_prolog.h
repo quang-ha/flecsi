@@ -322,6 +322,10 @@ namespace execution {
               ri->color_lr = h.color_region;
               ri->global_to_local_color_map_ptr = 
                h.global_to_local_color_map_ptr;
+              for(size_t owner{0}; owner<_pbp_size; owner++) {
+                ri->owners.push_back(owner);
+                ri->barriers.push_back((h.ghost_owners_pbarriers_ptrs[owner]));
+               } // for
            }
            else{
               ri = &ritr->second;
@@ -329,12 +333,16 @@ namespace execution {
 
            ri->fids.push_back(h.fid);
 
+std::cout<<"IRINA DEBUG task prolog 1, num_owners = "<< _pbp_size<<
+  ", sizes = "<<ri->barriers.size()<<", "<<ri->owners.size()<<std::endl;
            // As user
            for(size_t owner{0}; owner<_pbp_size; owner++) {
              ri->owners.push_back(owner);
              ri->barriers.push_back((h.ghost_owners_pbarriers_ptrs[owner]));
 
            } // for
+std::cout<<"IRINA DEBUG task prolog 2, num_owners = "<< _pbp_size<<
+  ", sizes = "<<ri->barriers.size()<<", "<<ri->owners.size()<<std::endl;
          } // read_phase
 
          if(write_phase) {
@@ -422,13 +430,15 @@ namespace execution {
         args.index_spaces[i].data_client_hash = ri.data_client_hash;
         args.index_spaces[i].index_space = itr.first;
 
-        args.index_spaces[i].num_owners = ri.num_owners;
+        args.index_spaces[i].num_owners = ri.barriers.size();
 
         std::memcpy(args.index_spaces[i].owners, &ri.owners[0],
-          sizeof(size_t) * args.index_spaces[i].num_owners);
+          sizeof(size_t) * ri.owners.size());
 
-        for (size_t owner = 0; owner < ri.num_owners; owner++){
-          Legion::LogicalRegion ro = ri.shared_lrs[owner];
+        for (size_t owner = 0; owner < ri.barriers.size(); owner++){
+          size_t index = owner-((size_t)(ri.barriers.size()/ri.num_owners))
+            *ri.num_owners;
+          Legion::LogicalRegion ro = ri.shared_lrs[index];
 
           auto ritr = rm.find(ro);
           if(ritr == rm.end()){
@@ -478,6 +488,13 @@ namespace execution {
 
        for(auto& itr : nm){
         // Phase READ
+
+ {
+          clog_tag_guard(prolog);
+          clog(trace)<< "rank " << runtime->find_local_MPI_rank()
+             << " add arrival and wait barriers " <<
+            *(itr.second.barrier) << std::endl;
+}
         ghost_launcher.add_wait_barrier(*itr.second.barrier);
 
         // Phase WRITE
@@ -500,10 +517,12 @@ namespace execution {
       for(auto& itr : nm){
        {
           clog_tag_guard(prolog);
-          clog(trace) << " WAITS " <<
+          clog(trace)<< "rank " << runtime->find_local_MPI_rank()
+           << " WAITS " <<
             *(itr.second.barrier) << std::endl;
 
-          clog(trace) <<  " arrives & advances " <<
+          clog(trace)<< "rank " << runtime->find_local_MPI_rank()
+             <<  " arrives & advances " <<
             *(itr.second.barrier) << std::endl;
        } // scope
         

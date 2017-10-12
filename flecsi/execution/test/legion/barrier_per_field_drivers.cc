@@ -87,16 +87,16 @@ void driver(int argc, char ** argv) {
 
   flecsi_execute_task(read_task, single, handle1, my_color, 1);
 
-  for(size_t cycle=0; cycle<1; cycle++) {
+  for(size_t cycle=0; cycle<3; cycle++) {
     bool delay = false;
-//    flecsi_execute_task(write_task, single, handle1, my_color, cycle, delay);
+    flecsi_execute_task(write_task, single, handle1, handle2, my_color, cycle, delay);
 
-//    delay = true;
-//    flecsi_execute_task(write_task, single, handle2, my_color, cycle, delay);
+    delay = true;
+    flecsi_execute_task(write_task, single, handle2, handle1, my_color, cycle, delay);
 
-//    flecsi_execute_task(read_task, single, handle2, my_color, cycle);
+    flecsi_execute_task(read_task, single, handle2, my_color, cycle);
 
-//    flecsi_execute_task(read_task, single, handle1, my_color, cycle);
+    flecsi_execute_task(read_task, single, handle1, my_color, cycle);
 
   }
 
