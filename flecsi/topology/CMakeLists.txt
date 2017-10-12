@@ -13,13 +13,17 @@
 #~----------------------------------------------------------------------------~#
 
 set(topology_HEADERS
-  graph_definition.h
+  graph_definition.h 
   graph_utils.h
   index_space.h
   mesh_topology.h
   mesh_types.h
   mesh_utils.h
   tree_topology.h
+  structured_index_space.h
+  structured_mesh_types.h
+  structured_mesh_topology.h
+  structured_querytable.h
   PARENT_SCOPE
 )
 
@@ -55,6 +59,45 @@ cinch_add_unit(bindings
   LIBRARIES
     flecsi
 )
+
+#------------------------------------------------------------------------------#
+# Structured mesh unit tests.
+#------------------------------------------------------------------------------#
+
+cinch_add_unit(structured2d
+  SOURCES
+    test/structured2d.cc
+  LIBRARIES
+    flecsi
+)
+
+#cinch_add_unit(structured
+#  SOURCES
+#    test/structured.cc
+#  INPUTS
+#    test/structured.blessed
+#  LIBRARIES
+#    flecsi
+#    ${CINCH_RUNTIME_LIBRARIES}
+#)
+
+#cinch_add_unit(structured3d
+#  SOURCES
+#    test/structured3d.cc
+#  INPUTS
+#    test/structured3d.blessed
+#  LIBRARIES
+#    flecsi
+#    ${CINCH_RUNTIME_LIBRARIES}
+#)
+
+#cinch_add_unit(structured3dtime
+#  SOURCES
+#    test/structured3dtime.cc
+#  LIBRARIES
+#    flecsi
+#    ${CINCH_RUNTIME_LIBRARIES}
+#)
 
 #------------------------------------------------------------------------------#
 # N-Tree unit tests.
@@ -99,10 +142,6 @@ cinch_add_unit(gravity-state
     flecsi
 )
 
-cinch_add_unit(structured
-  SOURCES
-    test/structured.cc
-)
 
 #------------------------------------------------------------------------------#
 # Misc. unit tests.
