@@ -207,7 +207,7 @@ public:
   >
   auto get_box_id(E* e)
   {
-    return ms_.index_spaces[M][D].find_box_id(e.id()); 
+    return ms_.index_spaces[M][D].find_box_id(e->id(0)); 
   }
 
   /* Method Description: Returns upper bounds of basic/cartesian topology 
@@ -230,7 +230,7 @@ public:
   >
   auto get_indices(E* e)
   {
-    return ms_.index_spaces[M][D].get_indices_from_offset(e.id(0));
+    return ms_.index_spaces[M][D].get_indices_from_offset(e->id(0));
   }
   
   /* Method Description: Returns upper bounds of basic/cartesian topology 
