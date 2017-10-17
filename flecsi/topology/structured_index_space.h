@@ -496,10 +496,23 @@ public:
     return (box_upbnds_[B][D] - box_lowbnds_[B][D]+1);
   }
 
+  template<size_t D>
+  auto get_size_in_direction(size_t B)
+  {
+    assert(D>=0 && D <dim_);
+    return (box_upbnds_[B][D] - box_lowbnds_[B][D]+1);
+  }
+
   // Check if input index is between bounds along direction
   // D of box B. 
   template<size_t B, size_t D>
   bool check_index_limits(size_t index)
+  {
+    return (index >= box_lowbnds_[B][D] && index <= box_upbnds_[B][D]);
+  }
+
+  template<size_t D>
+  bool check_index_limits(size_t B, size_t index)
   {
     return (index >= box_lowbnds_[B][D] && index <= box_upbnds_[B][D]);
   }

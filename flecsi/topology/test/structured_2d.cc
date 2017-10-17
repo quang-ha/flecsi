@@ -36,7 +36,7 @@ public:
   static constexpr size_t num_domains = 1;
 
   static constexpr std::array<size_t,num_dimensions> lower_bounds = {0,0};
-  static constexpr std::array<size_t,num_dimensions> upper_bounds = {3,2};
+  static constexpr std::array<size_t,num_dimensions> upper_bounds = {2,1};
 
   using entity_types = std::tuple<
   std::pair<domain_<0>, Vertex>,
@@ -75,7 +75,6 @@ TEST(structured, simple){
   //Loop over all vertices and test intra index space queries
   CINCH_CAPTURE()<<"------Vertices------"<<endl;
   for (auto vertex: mesh->entities<0>()){
-   std::cout<<" vid = "<<vertex.id(0) <<std::endl;
    CINCH_CAPTURE() << "---- vertex id: " << vertex.id(0) << endl; 
    
    CINCH_CAPTURE() << "  -- indices "<< endl; 
@@ -87,18 +86,21 @@ TEST(structured, simple){
    auto offset = mesh->get_global_offset<0>(bid, id); 
    CINCH_CAPTURE() << "  ---- offset " <<offset<< endl; 
    ASSERT_EQ(vertex.id(0),offset); 
- /*
+ 
    //V-->V
-   CINCH_CAPTURE() << "  -- stencil [1 0] " <<mesh->entities<0,0,1,0>(vertex) << endl;
-   CINCH_CAPTURE() << "  -- stencil [0 1] " <<mesh->entities<0,0,0,1>(vertex) << endl;
-   CINCH_CAPTURE() << "  -- stencil [-1 0] " <<mesh->entities<0,0,-1,0>(vertex) << endl; 
-   CINCH_CAPTURE() << "  -- stencil [0 -1] " <<mesh->entities<0,0,0,-1>(vertex) << endl;
-  */
+   CINCH_CAPTURE() << "  -- stencil [1 0] "  
+                   <<mesh->stencil_entity< 1, 0, 0>(&vertex) << endl;
+   CINCH_CAPTURE() << "  -- stencil [0 1] "  
+                   <<mesh->stencil_entity< 0, 1, 0>(&vertex) << endl;
+   CINCH_CAPTURE() << "  -- stencil [-1 0] " 
+                   <<mesh->stencil_entity<-1, 0, 0>(&vertex) << endl; 
+   CINCH_CAPTURE() << "  -- stencil [0 -1] " 
+                   <<mesh->stencil_entity< 0,-1, 0>(&vertex) << endl;
+
    //V-->E
    CINCH_CAPTURE() << "  -- query V-->E "<< endl; 
    for (auto edge : mesh->entities<1,0>(&vertex))
    {
-    std::cout<<"  ---- eid = "<<edge.id(0) <<std::endl;
     CINCH_CAPTURE() << "  ---- " <<edge.id(0)<< endl;
    } 
    
@@ -106,7 +108,6 @@ TEST(structured, simple){
    CINCH_CAPTURE() << "  -- query V-->F "<< endl; 
    for (auto face : mesh->entities<2,0>(&vertex))
    {
-    std::cout<<"  ---- fid = "<<face.id(0) <<std::endl;
     CINCH_CAPTURE() << "  ---- " <<face.id(0)<< endl;
    } 
   
@@ -116,7 +117,6 @@ TEST(structured, simple){
   //Loop over all edges and test intra index space queries
   CINCH_CAPTURE()<<"------Edges------"<<endl;
   for (auto edge: mesh->entities<1>()){
-   std::cout<<" eid = "<<edge.id(0) <<std::endl;
    CINCH_CAPTURE() << "---- edge id: " << edge.id(0) << endl; 
    
    CINCH_CAPTURE() << "  -- indices "<< endl; 
@@ -128,18 +128,21 @@ TEST(structured, simple){
    auto offset = mesh->get_global_offset<1>(bid, id); 
    CINCH_CAPTURE() << "  ---- offset " <<offset<< endl; 
    ASSERT_EQ(edge.id(0),offset); 
- /*
-   //V-->V
-   CINCH_CAPTURE() << "  -- stencil [1 0] " <<mesh->entities<0,0,1,0>(vertex) << endl;
-   CINCH_CAPTURE() << "  -- stencil [0 1] " <<mesh->entities<0,0,0,1>(vertex) << endl;
-   CINCH_CAPTURE() << "  -- stencil [-1 0] " <<mesh->entities<0,0,-1,0>(vertex) << endl; 
-   CINCH_CAPTURE() << "  -- stencil [0 -1] " <<mesh->entities<0,0,0,-1>(vertex) << endl;
-  */
+ 
+   //E-->E
+   CINCH_CAPTURE() << "  -- stencil [1 0] "  
+                   <<mesh->stencil_entity< 1, 0, 0>(&edge) << endl;
+   CINCH_CAPTURE() << "  -- stencil [0 1] "  
+                   <<mesh->stencil_entity< 0, 1, 0>(&edge) << endl;
+   CINCH_CAPTURE() << "  -- stencil [-1 0] " 
+                   <<mesh->stencil_entity<-1, 0, 0>(&edge) << endl; 
+   CINCH_CAPTURE() << "  -- stencil [0 -1] " 
+                   <<mesh->stencil_entity< 0,-1, 0>(&edge) << endl;
+  
    //E-->V
    CINCH_CAPTURE() << "  -- query E-->V "<< endl; 
    for (auto vertex : mesh->entities<0,0>(&edge))
    {
-    std::cout<<"  ---- vid = "<<vertex.id(0) <<std::endl;
     CINCH_CAPTURE() << "  ---- " <<vertex.id(0)<< endl;
    } 
    
@@ -147,7 +150,6 @@ TEST(structured, simple){
    CINCH_CAPTURE() << "  -- query E-->F "<< endl; 
    for (auto face : mesh->entities<2,0>(&edge))
    { 
-    std::cout<<"  ---- fid = "<<face.id(0) <<std::endl;
     CINCH_CAPTURE() << "  ---- " <<face.id(0)<< endl;
    } 
   
@@ -157,7 +159,6 @@ TEST(structured, simple){
   //Loop over all faces and test intra index space queries
   CINCH_CAPTURE()<<"------Faces------"<<endl;
   for (auto face: mesh->entities<2>()){
-   std::cout<<" fid = "<<face.id(0) <<std::endl;
    CINCH_CAPTURE() << "---- face id: " << face.id(0) << endl; 
    
    CINCH_CAPTURE() << "  -- indices "<< endl; 
@@ -169,18 +170,21 @@ TEST(structured, simple){
    auto offset = mesh->get_global_offset<2>(bid, id); 
    CINCH_CAPTURE() << "  ---- offset " <<offset<< endl; 
    ASSERT_EQ(face.id(0),offset); 
- /*
-   //V-->V
-   CINCH_CAPTURE() << "  -- stencil [1 0] " <<mesh->entities<0,0,1,0>(vertex) << endl;
-   CINCH_CAPTURE() << "  -- stencil [0 1] " <<mesh->entities<0,0,0,1>(vertex) << endl;
-   CINCH_CAPTURE() << "  -- stencil [-1 0] " <<mesh->entities<0,0,-1,0>(vertex) << endl; 
-   CINCH_CAPTURE() << "  -- stencil [0 -1] " <<mesh->entities<0,0,0,-1>(vertex) << endl;
-  */
+ 
+   //F-->F
+   CINCH_CAPTURE() << "  -- stencil [1 0] "  
+                   <<mesh->stencil_entity< 1, 0, 0>(&face) << endl;
+   CINCH_CAPTURE() << "  -- stencil [0 1] "  
+                   <<mesh->stencil_entity< 0, 1, 0>(&face) << endl;
+   CINCH_CAPTURE() << "  -- stencil [-1 0] " 
+                   <<mesh->stencil_entity<-1, 0, 0>(&face) << endl; 
+   CINCH_CAPTURE() << "  -- stencil [0 -1] " 
+                   <<mesh->stencil_entity< 0,-1, 0>(&face) << endl;
+  
    //V-->E
    CINCH_CAPTURE() << "  -- query F-->V "<< endl; 
    for (auto vertex : mesh->entities<0,0>(&face))
    {
-    std::cout<<"  ---- vid = "<<vertex.id(0) <<std::endl;
     CINCH_CAPTURE() << "  ---- " <<vertex.id(0)<< endl;
    } 
    
@@ -188,14 +192,13 @@ TEST(structured, simple){
    CINCH_CAPTURE() << "  -- query F-->E "<< endl; 
    for (auto edge : mesh->entities<1,0>(&face))
    {
-    std::cout<<"  ---- eid = "<<edge.id(0) <<std::endl;
     CINCH_CAPTURE() << "  ---- " <<edge.id(0)<< endl;
    } 
   
    CINCH_CAPTURE()<<endl;
   }
 
-  CINCH_WRITE("structured_2d.blessed");
-  //ASSERT_TRUE(CINCH_EQUAL_BLESSED("structured_2d.blessed"));
-
+  //CINCH_WRITE("structured_2d.blessed");
+  ASSERT_TRUE(CINCH_EQUAL_BLESSED("structured_2d.blessed"));
+  delete mesh;
 } // TEST

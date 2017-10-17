@@ -290,9 +290,10 @@ public:
 
   /* Method Description: Provides FEM-type adjacency queries. Given an entity
   *                      ,find all entities incident on it from dimension TD.
-  *                      Supports queries between non-equal dimensions. The queries
-  *                      for entities from the same dimension can be obtained through 
-  *                      the more finer level queries for intra-index space. 
+  *                      Supports queries between non-equal dimensions. The 
+  *                      queries for entities from the same dimension can be 
+  *                      obtained through the more finer level queries for 
+  *                      intra-index space. 
   *  IN: 
   *  OUT: 
   */
@@ -303,7 +304,7 @@ public:
     size_t FD = E::dimension;
     assert(FD != TD);
     id_t id = e->id(0);
-    id_t BD = ms_.index_spaces[FM][FD].template find_box_id(id);
+    size_t BD = ms_.index_spaces[FM][FD].template find_box_id(id);
     auto indices = ms_.index_spaces[FM][FD].template 
                    get_indices_from_offset(id);
 
@@ -318,104 +319,83 @@ public:
   *  OUT: 
   */
   
-  template<size_t FM, std::intmax_t xoff, std::intmax_t yoff, class E>
-  auto entities(E* e)
+  template<
+  std::intmax_t xoff, 
+  size_t FM,  
+  class E>
+  auto stencil_entity(E* e)
   {
+    assert(!(xoff == 0) ); 
+    size_t FD = E::dimension;
+    size_t value = e->id(0);
+    size_t BD = ms_.index_spaces[FM][FD].template find_box_id(value);
+    auto indices = ms_.index_spaces[FM][FD].template
+                   get_indices_from_offset(value);
+  
+    if(ms_.index_spaces[FM][FD].template 
+       check_index_limits<0>(BD,xoff+indices[0]))
+    {
+      value += xoff;
+    }
+    return value; 
   }
 
-  /* Query type 3: FD-type stencil queries between entities
-   *               of the same dimension. 
-   * D : dimension, N: domain
-   * xoff, yoff, zoff: offsets w.r.t current entity
-  */
-  /*template<size_t D, size_t N, std::intmax_t xoff, typename E>
-  auto entities(E* e)
-  {
-    assert(xoff != 0); 
-    size_t value = e->id();
-    auto indices = ms_.index_spaces[N][D].template get_indices_from_offset(ent);
-    if (ms_.index_spaces[N][D].template check_index_limits<0>(xoff+indices[0]))
-      value += xoff;
-   // else 
-     // value = -1;
-    return value;
-  } //entities
-
-  template<size_t D, size_t N, std::intmax_t xoff, std::intmax_t yoff>
-  auto entities(size_t ent)
+  template<
+  std::intmax_t xoff, 
+  std::intmax_t yoff, 
+  size_t FM, 
+  class E>
+  auto stencil_entity(E* e)
   {
     assert(!((xoff == 0) && (yoff == 0))); 
-    size_t ind = get_index_in_storage(ent,D,N);
-    size_t value = ent;
-    size_t nx;
-
-    if (ind == 2)
-      ent = ent - ms_.index_spaces[N][1].template size();
-
-    auto indices = ms_.index_spaces[N][ind].template 
-                   get_indices_from_offset(ent);
-    
-    if((ms_.index_spaces[N][ind].template 
-       check_index_limits<0>(xoff+indices[0]))&& 
-       (ms_.index_spaces[N][ind].template 
-       check_index_limits<1>(yoff+indices[1])))
+    size_t FD = E::dimension;
+    size_t value = e->id(0);
+    size_t BD = ms_.index_spaces[FM][FD].template find_box_id(value);
+    auto indices = ms_.index_spaces[FM][FD].template
+                   get_indices_from_offset(value);
+  
+    if((ms_.index_spaces[FM][FD].template 
+       check_index_limits<0>(BD,xoff+indices[0]))&& 
+       (ms_.index_spaces[FM][FD].template 
+       check_index_limits<1>(BD,yoff+indices[1])))
     {
-      nx = ms_.index_spaces[N][ind].template get_size_in_direction(0);
+      size_t nx = ms_.index_spaces[FM][FD].template 
+                  get_size_in_direction<0>(BD);
       value += xoff + nx*yoff;
     }
     return value; 
-   }  //entities
+  }
 
-   template<size_t D, size_t N, std::intmax_t xoff, std::intmax_t yoff, 
-         std::intmax_t zoff>
-   auto entities(size_t ent)
-   {
+  template<
+  std::intmax_t xoff, 
+  std::intmax_t yoff, 
+  std::intmax_t zoff, 
+  size_t FM, 
+  class E>
+  auto stencil_entity(E* e)
+  {
     assert(!((xoff == 0) && (yoff == 0) && (zoff == 0))); 
-    size_t ind = get_index_in_storage(ent,D,N);
-    size_t value = ent;
-    size_t nx, ny;
-    
-    if (ind == 2) //edge-y
+    size_t FD = E::dimension;
+    size_t value = e->id(0);
+    size_t BD = ms_.index_spaces[FM][FD].template find_box_id(value);
+    auto indices = ms_.index_spaces[FM][FD].template
+                   get_indices_from_offset(value);
+  
+    if((ms_.index_spaces[FM][FD].template 
+       check_index_limits<0>(BD,xoff+indices[0])) && 
+       (ms_.index_spaces[FM][FD].template 
+       check_index_limits<1>(BD,yoff+indices[1])) &&
+       (ms_.index_spaces[FM][FD].template
+       check_index_limits<2>(BD,zoff+indices[2])))
     {
-      ent = ent - ms_.index_spaces[N][1].template size();
+      size_t nx = ms_.index_spaces[FM][FD].template 
+                  get_size_in_direction<0>(BD);
+      size_t ny = ms_.index_spaces[FM][FD].template 
+                  get_size_in_direction<1>(BD);
+      value += xoff + nx*yoff + nx*ny*zoff;
     }
-    else if (ind == 3)//edge-z
-    {
-      ent = ent - (ms_.index_spaces[N][1].template size()) - 
-                  (ms_.index_spaces[N][2].template size());
-    }
-    else if (ind == 5)//face-y
-    {
-      ent = ent - ms_.index_spaces[N][4].template size();
-    }
-    else if (ind == 6)//face-z
-    {
-      ent = ent - (ms_.index_spaces[N][4].template size()) - 
-                  (ms_.index_spaces[N][5].template size());
-    }
-    else
-      ent = ent;
-
-    auto indices = ms_.index_spaces[N][ind].template 
-                   get_indices_from_offset(ent);
-
-    if((ms_.index_spaces[N][ind].template 
-       check_index_limits<0>(xoff+indices[0]))&& 
-       (ms_.index_spaces[N][ind].template 
-       check_index_limits<1>(yoff+indices[1]))&& 
-       (ms_.index_spaces[N][ind].template 
-       check_index_limits<2>(zoff+indices[2])))
-     {
-         nx = ms_.index_spaces[N][ind].template get_size_in_direction(0);
-         ny = ms_.index_spaces[N][ind].template get_size_in_direction(1);
-         value += xoff + nx*yoff+nx*ny*zoff;
-     }
-     //else
-     //   value = -1;
-    return value;
-   } //entities
-   */
-
+    return value; 
+  }
 
 private:
 
