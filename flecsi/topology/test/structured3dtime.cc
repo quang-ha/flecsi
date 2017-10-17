@@ -63,7 +63,7 @@ public:
   static constexpr size_t num_domains = 1;
 
   static constexpr std::array<size_t,num_dimensions> lower_bounds = {0,0,0};
-  static constexpr std::array<size_t,num_dimensions> upper_bounds = {639,639,639};
+  static constexpr std::array<size_t,num_dimensions> upper_bounds = {9,9,9};
 
   using entity_types = std::tuple<
   std::pair<domain_<0>, Vertex>,
