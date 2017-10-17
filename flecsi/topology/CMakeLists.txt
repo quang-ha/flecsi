@@ -67,12 +67,16 @@ cinch_add_unit(bindings
 cinch_add_unit(structured_1d
   SOURCES
     test/structured_1d.cc
+  INPUTS
+    test/structured_1d.blessed
   LIBRARIES
     flecsi
 )
 cinch_add_unit(structured_2d
   SOURCES
     test/structured_2d.cc
+  INPUTS
+    test/structured_2d.blessed
   LIBRARIES
     flecsi
 )
@@ -80,29 +84,11 @@ cinch_add_unit(structured_2d
 cinch_add_unit(structured_3d
   SOURCES
     test/structured_3d.cc
+  INPUTS
+    test/structured_3d.blessed
   LIBRARIES
     flecsi
 )
-
-#cinch_add_unit(structured
-#  SOURCES
-#    test/structured.cc
-#  INPUTS
-#    test/structured.blessed
-#  LIBRARIES
-#    flecsi
-#    ${CINCH_RUNTIME_LIBRARIES}
-#)
-
-#cinch_add_unit(structured3d
-#  SOURCES
-#    test/structured3d.cc
-#  INPUTS
-#    test/structured3d.blessed
-#  LIBRARIES
-#    flecsi
-#    ${CINCH_RUNTIME_LIBRARIES}
-#)
 
 #cinch_add_unit(structured3dtime
 #  SOURCES
