@@ -15,10 +15,10 @@
 #ifndef flecsi_structured_index_space_h
 #define flecsi_structured_index_space_h
 
+#include <vector>
 #include <cassert>
 #include <algorithm>
 #include <type_traits>
-#include <vector>
 
 #include "flecsi/topology/structured_querytable.h"
 
@@ -32,9 +32,10 @@ class structured_index_space{
 public:
   using id_t        = typename std::remove_pointer<E>::type::id_t;
   using id_vector_t = typename std::conditional<DM==0, 
-                               std::vector<id_t>, 
-                               std::array<id_t,DM>>::type;
+                               std::vector<size_t>, 
+                               std::array<size_t,DM>>::type;
   using id_array_t  = std::vector<std::vector<id_t>>;
+  using qtable_t    = typename query::QueryTable<DM,DM+1,DM,DM+1>;
 
  /******************************************************************************
  *               Constructors/Destructors/Initializations                      *    
@@ -86,13 +87,15 @@ public:
       std::cout<<" ----Box-lower-bnds = { ";
       for (size_t j = 0 ; j < dim_; j++)
         std::cout<<box_lowbnds_[i][j]<<", ";
-      std::cout<<" }"<<std::endl;
+      std::cout<<"}"<<std::endl;
     
       std::cout<<" ----Box-upper-bnds = { ";
       for (size_t j = 0 ; j < dim_; j++)
         std::cout<<box_upbnds_[i][j]<<", ";
-      std::cout<<" }"<<std::endl;
+      std::cout<<"}"<<std::endl;
     }
+   std::cout<<"Primary == "<<primary<<std::endl;
+
   }
    
   //default constructor
@@ -177,9 +180,9 @@ public:
  *                         Query-Specific Iterators                            *    
  * ****************************************************************************/ 
   template <size_t TD, class S>
-  auto traverse(size_t FD, size_t ID, id_vector_t &indices)
+  auto traverse(size_t FD, size_t ID, id_vector_t &indices, qtable_t *qt)
   {
-    return traversal<TD, S>(this, dim_, FD, ID, indices);
+    return traversal<TD, S>(this, dim_, FD, ID, indices, qt);
   }
 
   template<size_t TD1, class S1, class E1=E, size_t DM1 = DM>
@@ -192,16 +195,18 @@ public:
       id_t MD1, 
       id_t FD1, 
       id_t ID1, 
-      id_vector_t &indices):
+      id_vector_t &indices,
+      qtable_t *qt1):
       is_{is}, 
       MD1_{MD1}, 
       FD1_{FD1}, 
       ID1_{ID1}, 
-      indices_{indices}
+      indices_{indices},
+      qt1_{qt1}
     {
       TD1_ = TD1;
-      auto qt = query::qtable(MD1_);
-      id_t nq = qt->entry[FD1_][ID1_][TD1_].size();
+      //auto qt = query::qtable(MD1_);
+      id_t nq = qt1_->entry[FD1_][ID1_][TD1_].size();
       start_ = 0;
       finish_ = nq;
     };
@@ -213,7 +218,8 @@ public:
     class iterator_t{
      public:
       iterator_t(
-        structured_index_space<E2,DM2> *is, 
+        structured_index_space<E2,DM2> *is,
+        qtable_t *qt2, 
         id_t MD2, 
         id_t FD2, 
         id_t ID2, 
@@ -223,6 +229,7 @@ public:
         id_t end_idx, 
         bool forward):
         is_{is}, 
+        qt2_{qt2},
         MD2_{MD2}, 
         FD2_{FD2}, 
         ID2_{ID2},
@@ -305,15 +312,15 @@ public:
       bool isvalid(id_t vindex)
       {
         bool valid = true; 
-        auto qt = query::qtable(MD2_);
+    //    auto qt = query::qtable(MD2_);
         
         // Get box id 
-        id_t bid = qt->entry[FD2_][ID2_][TD2_].adjacencies[vindex].box_id;
+        id_t bid = qt2_->entry[FD2_][ID2_][TD2_].adjacencies[vindex].box_id;
  
         // Get number of directions to check
-        id_t nchk    = qt->entry[FD2_][ID2_][TD2_].adjacencies[vindex].numchk;
-        auto dir     = qt->entry[FD2_][ID2_][TD2_].adjacencies[vindex].dir; 
-        auto chk_bnd = qt->entry[FD2_][ID2_][TD2_].adjacencies[vindex].bnd_chk;
+        id_t nchk    = qt2_->entry[FD2_][ID2_][TD2_].adjacencies[vindex].numchk;
+        auto dir     = qt2_->entry[FD2_][ID2_][TD2_].adjacencies[vindex].dir; 
+        auto chk_bnd = qt2_->entry[FD2_][ID2_][TD2_].adjacencies[vindex].bnd_chk;
  
         for (id_t i = 0; i < nchk; i++)
         {
@@ -329,9 +336,9 @@ public:
       auto compute_id(id_t vindex)
       { 
         id_vector_t adj;
-        auto qt = query::qtable(MD2_);
-        id_t bid = qt->entry[FD2_][ID2_][TD2_].adjacencies[vindex].box_id;
-        auto offset = qt->entry[FD2_][ID2_][TD2_].adjacencies[vindex].offset;
+        //auto qt = query::qtable(MD2_);
+        id_t bid = qt2_->entry[FD2_][ID2_][TD2_].adjacencies[vindex].box_id;
+        auto offset = qt2_->entry[FD2_][ID2_][TD2_].adjacencies[vindex].offset;
         for (id_t i = 0; i < MD2_; i++)
           adj[i] = indices_[i]+offset[i];     
 
@@ -339,32 +346,34 @@ public:
       }
 
      private:
-       structured_index_space<E2,DM2> *is_; 
+       structured_index_space<E2,DM2> *is_;
+       qtable_t *qt2_; 
        id_t MD2_, FD2_, ID2_, TD2_;
        id_vector_t indices_;
        id_t valid_idx_;
        id_t end_idx_;
        S2*  valid_ent_;
-       bool forward_; 
+       bool forward_;
     };
 
     auto begin()
     {
-      return iterator_t<S1, E1, DM1>(is_, MD1_, FD1_, ID1_, TD1_, indices_,
-                                 start_, finish_, true); 
+      return iterator_t<S1, E1, DM1>(is_, qt1_, MD1_, FD1_, ID1_, TD1_, 
+                                     indices_, start_, finish_, true); 
     };
 
     auto end()
     {
-      return iterator_t<S1, E1, DM1>(is_, MD1_, FD1_, ID1_, TD1_, indices_, 
-                                 finish_-1, finish_, false);
+      return iterator_t<S1, E1, DM1>(is_, qt1_, MD1_, FD1_, ID1_, TD1_, 
+                                     indices_, finish_-1, finish_, false);
     };
 
     private: 
        structured_index_space<E1, DM1> *is_; 
        id_t MD1_, FD1_, ID1_, TD1_;
        id_vector_t indices_;
-       id_t start_, finish_; 
+       id_t start_, finish_;
+       qtable_t *qt1_; 
   };
 
  /******************************************************************************
@@ -399,10 +408,10 @@ public:
     size_t value =0;
     size_t factor;
 
-    for (int i = 0; i <dim_; ++i)
+    for (size_t i = 0; i <dim_; ++i)
     {
       factor = 1;
-      for (int j=0; j<dim_-i-1; ++j)
+      for (size_t j=0; j<dim_-i-1; ++j)
       {
         factor *= box_upbnds_[B][j]-box_lowbnds_[B][j]+1;
       }
@@ -418,10 +427,10 @@ public:
     size_t value =0;
     size_t factor;
 
-    for (int i = 0; i <dim_; ++i)
+    for (size_t i = 0; i <dim_; ++i)
     {
       factor = 1;
-      for (int j=0; j<dim_-i-1; ++j)
+      for (size_t j=0; j<dim_-i-1; ++j)
       {
         factor *= box_upbnds_[B][j]-box_lowbnds_[B][j]+1;
       }
@@ -438,15 +447,18 @@ public:
     auto box_id = 0;
     if (num_boxes_ > 0)
        box_id = find_box_id(offset);
+ 
+    size_t rem = offset;
+    for (size_t i=0; i<box_id; ++i)
+      rem -= box_size_[i];
 
     id_vector_t id;
-    size_t factor;
-    size_t rem = offset, value;
+    size_t factor, value;
 
-    for (int i=0; i<dim_; ++i)
+    for (size_t i=0; i<dim_; ++i)
     {
       factor = 1; 
-      for (int j=0; j<dim_-i-1; ++j)
+      for (size_t j=0; j<dim_-i-1; ++j)
       {
        factor *= box_upbnds_[box_id][j]-box_lowbnds_[box_id][j] + 1; 
       }
@@ -470,7 +482,7 @@ public:
         break;
       }
 
-      low = low + up;
+      low = up;
       up  = up + box_size_[i+1];
     }
     return bid;

@@ -14,23 +14,18 @@
 #ifndef flecsi_structured_mesh_topology_h
 #define flecsi_structured_mesh_topology_h
 
-
-#include <cassert>
-#include <iostream>
-#include <cstring>
 #include <array>
 #include <vector>
-#include <map>
-#include <unordered_map>
-#include <cmath>
-#include <algorithm>
+#include <cassert>
+#include <cstring>
+#include <iostream>
 #include <functional>
 #include <type_traits>
 
 #include "flecsi/utils/common.h"
-#include "flecsi/utils/set_intersection.h"
 #include "flecsi/utils/static_verify.h"
 #include "flecsi/topology/structured_mesh_types.h"
+#include "flecsi/topology/structured_querytable.h"
 
 namespace flecsi {
 namespace topology {
@@ -116,12 +111,8 @@ public:
   structured_mesh_topology_t()
   {
       meshdim_ = MT::num_dimensions;  
-      //meshbnds_low_.insert(meshbnds_low_.begin(),  MT::lower_bounds.begin(), 
-      //MT::lower_bounds.end());
-      //meshbnds_up_.insert(meshbnds_up_.begin(),  MT::upper_bounds.begin(), 
-      //MT::upper_bounds.end());
 
-      for (size_t i = 0; i <= meshdim_; ++i)
+      for (size_t i = 0; i < meshdim_; ++i)
       {
         meshbnds_low_[i] = MT::lower_bounds[i];
         meshbnds_up_[i]  = MT::upper_bounds[i];
@@ -135,10 +126,19 @@ public:
         vec = get_bnds(meshdim_, i);
         ms_.index_spaces[0][i].init(primary, meshbnds_low_, meshbnds_up_, vec);
       }
+
+     //create query table once
+     qt = new query::QueryTable<MT::num_dimensions, MT::num_dimensions+1,
+                         MT::num_dimensions, MT::num_dimensions+1>(); 
+     
+     query::qtable(qt);  
   }
 
   // mesh destructor
-  virtual ~structured_mesh_topology_t(){}
+  virtual ~structured_mesh_topology_t()
+  {
+    delete qt;
+  }
  
 
   /*!
@@ -230,7 +230,7 @@ public:
   >
   auto get_indices(E* e)
   {
-    return ms_.index_spaces[M][D].get_indices_from_offset(e.id());
+    return ms_.index_spaces[M][D].get_indices_from_offset(e.id(0));
   }
   
   /* Method Description: Returns upper bounds of basic/cartesian topology 
@@ -243,7 +243,7 @@ public:
   >
   auto get_global_offset(size_t box_id, id_vector_t &idv) 
   {
-    return ms_.index_spaces[M][D].template get_global_offset_from_indices<box_id>(idv);
+    return ms_.index_spaces[M][D].template get_global_offset_from_indices(box_id, idv);
   }
 
   template<
@@ -252,7 +252,7 @@ public:
   >
   auto get_local_offset(size_t box_id, id_vector_t &idv) 
   {
-    return ms_.index_spaces[M][D].template get_local_offset_from_indices<box_id>(idv);
+    return ms_.index_spaces[M][D].template get_local_offset_from_indices(box_id, idv);
   }
   
 
@@ -304,9 +304,12 @@ public:
     assert(FD != TD);
     id_t id = e->id(0);
     id_t BD = ms_.index_spaces[FM][FD].template find_box_id(id);
-    auto indices = ms_.index_spaces[FM][FD].template get_indices_from_offset(id);
+    auto indices = ms_.index_spaces[FM][FD].template 
+                   get_indices_from_offset(id);
+
     using etype = entity_type<TD,FM>;
-    return ms_.index_spaces[FM][TD].template traverse<TD,etype>(FD,BD,indices);
+    return ms_.index_spaces[FM][TD].template 
+           traverse<TD,etype>(FD, BD, indices, qt);
   } //entities
 
   /* Method Description: Provides FD-type adjacency queries. Given an entity
@@ -421,6 +424,8 @@ private:
   id_vector_t meshbnds_up_;
   structured_mesh_storage_t<MT::num_dimensions, MT::num_domains> ms_;
 
+  query::QueryTable<MT::num_dimensions, MT::num_dimensions+1, 
+                    MT::num_dimensions, MT::num_dimensions+1>  *qt; 
 
   // Get the number of entities in a given domain and topological dimension
   size_t

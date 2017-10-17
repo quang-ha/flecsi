@@ -64,9 +64,22 @@ cinch_add_unit(bindings
 # Structured mesh unit tests.
 #------------------------------------------------------------------------------#
 
-cinch_add_unit(structured2d
+cinch_add_unit(structured_1d
   SOURCES
-    test/structured2d.cc
+    test/structured_1d.cc
+  LIBRARIES
+    flecsi
+)
+cinch_add_unit(structured_2d
+  SOURCES
+    test/structured_2d.cc
+  LIBRARIES
+    flecsi
+)
+
+cinch_add_unit(structured_3d
+  SOURCES
+    test/structured_3d.cc
   LIBRARIES
     flecsi
 )
