@@ -90,13 +90,12 @@ cinch_add_unit(structured_3d
     flecsi
 )
 
-#cinch_add_unit(structured3dtime
-#  SOURCES
-#    test/structured3dtime.cc
-#  LIBRARIES
-#    flecsi
-#    ${CINCH_RUNTIME_LIBRARIES}
-#)
+cinch_add_unit(structured3dtime
+  SOURCES
+    test/structured3dtime.cc
+  LIBRARIES
+    flecsi
+)
 
 #------------------------------------------------------------------------------#
 # N-Tree unit tests.

@@ -78,7 +78,7 @@ public:
      size_ += box_size_[i];
 
     //debug print
-    for (size_t i = 0; i < num_boxes_; i++)
+    /*for (size_t i = 0; i < num_boxes_; i++)
     {
       std::cout<<"Box-id = "<<i<<std::endl;
       std::cout<<" -- Box-offset = "<<box_offset_[i]<<std::endl;
@@ -95,7 +95,7 @@ public:
       std::cout<<"}"<<std::endl;
     }
    std::cout<<"Primary == "<<primary<<std::endl;
-
+   */
   }
    
   //default constructor
