@@ -31,7 +31,7 @@ struct sparse_data_handle_base__ :
   using entry_value_t = data::sparse_entry_value__<T>;
 
   size_t index_space;
-  size_t data_client_hash;
+  size_t client_key;
   size_t max_entries_per_index;
 
   entry_value_t* entries = nullptr;
@@ -61,7 +61,7 @@ struct sparse_data_handle_base__ :
   sparse_data_handle_base__(const sparse_data_handle_base__& b)
   : DATA_POLICY(b),
   index_space(b.index_space),
-  data_client_hash(b.data_client_hash),
+  client_key(b.client_key),
   max_entries_per_index(b.max_entries_per_index),
   entries(b.entries),
   offsets(b.offsets),

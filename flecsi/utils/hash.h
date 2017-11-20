@@ -62,21 +62,17 @@ bit_range(
 //----------------------------------------------------------------------------//
 //! Create a hash key suitable for registering a data client.
 //!
-//! @tparam NAMESPACE A namespace identifier.
-//! @tparam NAME      A name identifier.
+//! @param namespace_hash client namespace hash
+//! @param name_hash client name hash
+//! @param type_hash client type hash
 //!
 //! @ingroup utils
 //----------------------------------------------------------------------------//
-
-template<
-  size_t NAMESPACE,
-  size_t NAME
->
 inline
-constexpr size_t
-client_hash()
+size_t
+client_hash(size_t namespace_hash, size_t name_hash, size_t type_hash)
 {
-  return NAMESPACE ^ NAME;
+  return type_hash ^ namespace_hash ^ name_hash;
 } // field_hash__
 
 ////////////////////////////////////////////////////////////////////////////////

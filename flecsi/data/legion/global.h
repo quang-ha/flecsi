@@ -203,13 +203,12 @@ struct storage_class__<global> {
     auto& context = execution::context_t::instance();
 
     auto& field_info =
-      context.get_field_info_from_name(
-        typeid(typename DATA_CLIENT_TYPE::type_identifier_t).hash_code(),
+      context.get_field_info_from_name(client_handle.key,
       utils::hash::field_hash<NAMESPACE, NAME>(VERSION));
 
     size_t index_space = field_info.index_space;
     auto& ism = context.index_space_data_map();
-    h.data_client_hash = field_info.data_client_hash;
+    h.client_key = field_info.client_key;
     h.color_region = ism[index_space].color_region;
     h.fid = field_info.fid;
     h.index_space = field_info.index_space;

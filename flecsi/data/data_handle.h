@@ -60,6 +60,8 @@ struct data_handle_base__ : public DATA_POLICY, public data_handle_base_t {
 
   data_handle_base__(const data_handle_base__& b)
   : DATA_POLICY(b){
+    client_key = b.client_key;
+    index_space = b.index_space;
     exclusive_data = b.exclusive_data;
     shared_data = b.shared_data;
     ghost_data = b.ghost_data;
@@ -79,6 +81,9 @@ struct data_handle_base__ : public DATA_POLICY, public data_handle_base_t {
     global = b.global;
     color = b.color;
   }
+
+  size_t client_key;
+  size_t index_space;
 
   T* exclusive_data = nullptr;
   T* exclusive_buf = nullptr;

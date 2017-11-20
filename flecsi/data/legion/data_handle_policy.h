@@ -40,8 +40,6 @@ struct legion_data_handle_policy_t
 
   field_id_t fid;
   field_id_t id_fid;
-  size_t index_space;
-  size_t data_client_hash;
 
   // These depend on color but are only used in specifying
   // the region requirements

@@ -72,9 +72,7 @@ runtime_driver(
     flecsi::data::storage_t::instance().client_registry();
 
   for(auto & c: client_registry) {
-    for(auto & d: c.second) {
-      d.second.second(d.second.first);
-    } // for
+    c.second(c.first);
   } // for
 
   //--------------------------------------------------------------------------//
@@ -84,11 +82,13 @@ runtime_driver(
   auto & field_registry =
     flecsi::data::storage_t::instance().field_registry();
 
-  for(auto & c: field_registry) {
-    for(auto & f: c.second) {
-      f.second.second(f.first, f.second.first);
+  for(auto & c: client_registry) {
+    for(auto & f: field_registry) {
+      for(auto & fi: f.second) {
+        fi.second.second(c.first, fi.first, fi.second.first);
+      } // for
     } // for
-  } // for
+  }
 
   int num_colors;
   MPI_Comm_size(MPI_COMM_WORLD, &num_colors);

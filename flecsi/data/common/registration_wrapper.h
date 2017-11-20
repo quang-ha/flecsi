@@ -52,15 +52,14 @@ struct field_registration_wrapper__
   static
   void
   register_callback(
+    size_t client_key,
     size_t key,
     field_id_t fid
   )
   {
     execution::context_t::field_info_t fi;
 
-    fi.data_client_hash = 
-      typeid(typename DATA_CLIENT_TYPE::type_identifier_t).hash_code();
-
+    fi.client_key = client_key;
     fi.storage_class = STORAGE_CLASS;
     fi.size = sizeof(DATA_TYPE);
     fi.namespace_hash = NAMESPACE_HASH;
@@ -344,7 +343,7 @@ struct client_registration_wrapper__<
   static
   void
   register_callback(
-    field_id_t fid
+    size_t key
   )
   {
     using entity_types_t = typename POLICY_TYPE::entity_types;
@@ -357,18 +356,14 @@ struct client_registration_wrapper__<
       typeid(typename CLIENT_TYPE::type_identifier_t).hash_code();
     auto const & field_registry = storage.field_registry();
 
-    // Only register field attributes if this is the first time
-    // that we have seen this type.
-    if(storage.register_client_fields(client_key)){
-      entity_walker_t entity_walker;
-      entity_walker.template walk_types<entity_types_t>();
+    entity_walker_t entity_walker;
+    entity_walker.template walk_types<entity_types_t>();
 
-      connectivity_walker_t connectivity_walker;
-      connectivity_walker.template walk_types<connectivities>();
+    connectivity_walker_t connectivity_walker;
+    connectivity_walker.template walk_types<connectivities>();
 
-      binding_walker_t binding_walker;
-      binding_walker.template walk_types<bindings>();
-    } // if
+    binding_walker_t binding_walker;
+    binding_walker.template walk_types<bindings>();
 
   } // register_callback
 

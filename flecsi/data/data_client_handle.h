@@ -42,7 +42,7 @@ struct data_client_handle_base__ :
       DATA_POLICY>& h)
   : DATA_POLICY(h),
     DATA_CLIENT_TYPE(h),
-    client_hash(h.client_hash),
+    key(h.key),
     name_hash(h.name_hash),
     namespace_hash(h.namespace_hash)
   {
@@ -54,14 +54,14 @@ struct data_client_handle_base__ :
     const data_client_handle_base__& h)
   : DATA_POLICY(h),
     DATA_CLIENT_TYPE(h),
-    client_hash(h.client_hash),
+    key(h.key),
     name_hash(h.name_hash),
     namespace_hash(h.namespace_hash)
   {
 
   }
 
-  size_t client_hash;
+  size_t key;
   size_t name_hash;
   size_t namespace_hash;
 }; // struct data_client_handle__

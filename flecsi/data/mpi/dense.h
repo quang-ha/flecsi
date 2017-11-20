@@ -126,12 +126,13 @@ struct storage_class__<dense>
     typename DATA_TYPE,
     size_t NAMESPACE,
     size_t NAME,
-    size_t VERSION
+    size_t VERSION,
+    size_t PERMISSIONS
   >
   static
   handle_t<DATA_TYPE, 0, 0, 0>
   get_handle(
-    const data_client_t & data_client
+    const data_client_handle__<DATA_CLIENT_TYPE, PERMISSIONS>& client_handle
   )
   {
     handle_t<DATA_TYPE, 0, 0, 0> h;
@@ -142,8 +143,7 @@ struct storage_class__<dense>
 
     // get field_info for this data handle
     auto& field_info =
-      context.get_field_info_from_name(
-        typeid(typename DATA_CLIENT_TYPE::type_identifier_t).hash_code(),
+      context.get_field_info_from_name(client_handle.key,
       utils::hash::field_hash<NAMESPACE, NAME>(VERSION));
 
     // get color_info for this field.
@@ -170,7 +170,7 @@ struct storage_class__<dense>
 
     hb.fid = field_info.fid;
     hb.index_space = field_info.index_space;
-    hb.data_client_hash = field_info.data_client_hash;
+    hb.client_key = client_handle.key;
 
     hb.exclusive_size = color_info.exclusive;
     hb.combined_data = hb.exclusive_buf = hb.exclusive_data =

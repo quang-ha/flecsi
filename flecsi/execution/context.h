@@ -73,7 +73,7 @@ struct context__ : public CONTEXT_POLICY
   //--------------------------------------------------------------------------//
 
   struct field_info_t{
-    size_t data_client_hash;
+    size_t client_key;
     size_t storage_class;
     size_t size;
     size_t namespace_hash;
@@ -537,12 +537,12 @@ struct context__ : public CONTEXT_POLICY
   )
   {
     size_t index_space = field_info.index_space;
-    size_t data_client_hash = field_info.data_client_hash;
+    size_t client_key = field_info.client_key;
     field_id_t fid = field_info.fid;
 
-    field_info_map_[{data_client_hash, index_space}].emplace(fid, field_info);
+    field_info_map_[{client_key, index_space}].emplace(fid, field_info);
 
-    field_name_map_.insert({{field_info.data_client_hash, field_info.key},
+    field_name_map_.insert({{field_info.client_key, field_info.key},
       {index_space, fid}});
   } // put_field_info
 

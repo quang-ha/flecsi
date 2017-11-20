@@ -136,7 +136,7 @@ namespace execution {
               color_regions.push_back(h.color_region);
               fids.push_back(h.fid);
               ghost_copy_args local_args;
-              local_args.data_client_hash = h.data_client_hash;
+              local_args.data_client_hash = h.client_key;
               local_args.index_space = h.index_space;
               local_args.owner = owner;
               args.push_back(local_args);

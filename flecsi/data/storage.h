@@ -42,14 +42,16 @@ struct storage__ : public STORAGE_POLICY {
   // Public type definitions.
   //--------------------------------------------------------------------------//
 
-  using registration_function_t = std::function<void(size_t)>;
-  using field_registration_function_t = std::function<void(size_t, size_t)>;
+  using client_registration_function_t = std::function<void(size_t)>;
+  
+  using field_registration_function_t = 
+    std::function<void(size_t, size_t, size_t)>;
+  
   using unique_fid_t = utils::unique_id_t<field_id_t, FLECSI_GENERATED_ID_MAX>;
   using field_value_t = std::pair<field_id_t, field_registration_function_t>;
-  using client_value_t = std::pair<field_id_t, registration_function_t>;
 
+  // key: field name/namespace key 
   using field_entry_t = std::unordered_map<size_t, field_value_t>;
-  using client_entry_t = std::unordered_map<size_t, client_value_t>;
 
   //--------------------------------------------------------------------------//
   //! Register a field with the runtime.
@@ -105,28 +107,17 @@ struct storage__ : public STORAGE_POLICY {
 
   bool
   register_client(
-    size_t client_key,
     size_t key,
-    const registration_function_t & callback
+    const client_registration_function_t & callback
   )
   {
-    if(client_registry_.find(client_key) != client_registry_.end()) {
-      clog_assert(client_registry_[client_key].find(key) ==
-                  client_registry_[client_key].end(),
-                  "client key already exists");
-    } // if
+    clog_assert(client_registry_.find(key) == client_registry_.end(),
+      "client key already exists");
 
-    client_registry_[client_key][key] =
-      std::make_pair(unique_fid_t::instance().next(), callback);
+    client_registry_[key] = callback;
 
     return true;
   } // register_client
-
-  bool
-  register_client_fields(size_t client_key)
-  {
-    return registered_client_fields_.insert(client_key).second;
-  }
 
 	//--------------------------------------------------------------------------//
   //! Myer's singleton instance.
@@ -173,8 +164,12 @@ private:
   storage__ & operator = (storage__ &&) = delete;
 
   std::unordered_set<size_t> registered_client_fields_;
+  
+  // key: client type/name/namespace hash key 
   std::unordered_map<size_t, field_entry_t> field_registry_;
-  std::unordered_map<size_t, client_entry_t> client_registry_;
+
+  // key: client type/name/namespace hash key 
+  std::unordered_map<size_t, client_registration_function_t> client_registry_;
 }; // class storage__
 
 } // namespace data
