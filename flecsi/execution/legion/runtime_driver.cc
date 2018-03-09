@@ -297,7 +297,7 @@ runtime_driver(
       data.color_domain(), Legion::TaskArgument(nullptr, 0), arg_map);
   index_launcher.tag = MAPPER_FORCE_RANK_MATCH;
 
-  must_epoch_launcher.add_index_task(point, index_launcher);
+  must_epoch_launcher.add_index_task(index_launcher);
   must_epoch_launcher.launch_domain = data.color_domain();
   auto future = runtime->execute_must_epoch(ctx, must_epoch_launcher);
   bool silence_warnings = true;
