@@ -127,7 +127,7 @@ legion_context_policy_t::unset_call_mpi(
       Legion::TaskArgument(NULL, 0), arg_map);
 
   Legion::MustEpochLauncher must_epoch_launcher;
-  must_epoch.launcher.launch_domain =
+  must_epoch_launcher.launch_domain =
       Legion::Domain::from_rect<1>(context_t::instance().all_processes());
   must_epoch_launcher.add_index_task(launcher);
   auto fm = runtime->execute_must_epoch(ctx, must_epoch_launcher);
