@@ -183,6 +183,7 @@ runtime_driver(
   } // for idx_space
 
   Legion::MustEpochLauncher must_epoch_launcher1;
+  must_epoch_launcher1.launch_domain = data.color_domain();
   must_epoch_launcher1.add_index_task(pos_compaction_launcher);
   runtime->execute_must_epoch(ctx, must_epoch_launcher1);
 
@@ -219,6 +220,7 @@ runtime_driver(
   } // for idx_space
 
   Legion::MustEpochLauncher must_epoch_launcher2;
+  must_epoch_launcher2.launch_domain = data.color_domain();
   must_epoch_launcher2.add_index_task(fix_ghost_refs_launcher);
   auto fm = runtime->execute_must_epoch(ctx, must_epoch_launcher2);
 
