@@ -273,19 +273,6 @@ runtime_driver(
 
   // Add colors to must_epoch_launcher
   for(size_t color(0); color<num_colors; ++color) {
-
-    std::vector<size_t> num_ghost_owners;
-
-    for(auto is: context_.coloring_map()) {
-      size_t idx_space = is.first;
-
-      flecsi::coloring::coloring_info_t color_info =
-          coloring_info[idx_space][color];
-
-      num_ghost_owners.push_back(color_info.ghost_owners.size());
-    } // for idx_space
-
-    size_t num_idx_spaces = context_.coloring_map().size();
    
     //-----------------------------------------------------------------------//
     // data serialization:
@@ -441,13 +428,13 @@ setup_rank_context_task(
   // Add additional setup.
   context_t & context_ = context_t::instance();
 
-  clog_assert(task->local_arglen > 0, "setup_rank_context_task called without arguments");
+  clog_assert(task->arglen > 0, "setup_rank_context_task called without arguments");
 
   //---------------------------------------------------------------------//
   // Deserialize task arguments
   // --------------------------------------------------------------------//
 
-  Legion::Deserializer args_deserializer(task->local_args, task->local_arglen);
+  Legion::Deserializer args_deserializer(task->args, task->arglen);
  
   // #2 deserialize field info
   size_t num_fields;
