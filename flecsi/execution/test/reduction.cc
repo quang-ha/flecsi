@@ -20,13 +20,12 @@ double local_value_task(
         const int cycle)
 {
 #if FLECSI_RUNTIME_MODEL == FLECSI_RUNTIME_MODEL_legion
-  auto runtime = Legion::Runtime::get_runtime();
-  const int my_color = runtime->find_local_MPI_rank();
+  context_t & context_ = context_t::instance();
+  const size_t my_color = context_.color();
 #elif FLECSI_RUNTIME_MODEL == FLECSI_RUNTIME_MODEL_mpi
   int my_color;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_color);
 #endif
-std::cout << "LVT " << my_color << std::endl;
   return static_cast<double>((my_color+1) * cycle);
 }
 

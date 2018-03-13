@@ -399,7 +399,7 @@ runtime_driver(
             color_ispace.color_partition);
   }
 
-  context_.advance_state();
+  //context_.advance_state();
   // run default or user-defined driver
   driver(args.argc, args.argv);
 
