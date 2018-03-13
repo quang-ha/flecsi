@@ -266,14 +266,26 @@ runtime_driver(
   // Must epoch launch
   Legion::MustEpochLauncher must_epoch_launcher;
 
-  Legion::ArgumentMap arg_map;
   std::map<size_t,Legion::Serializer> args_serializers;
 
   const auto setup_rank_context_id =
     context_.task_id<__flecsi_internal_task_key(setup_rank_context_task)>();
 
-  // Add colors to arg_map
+  // Add colors to must_epoch_launcher
   for(size_t color(0); color<num_colors; ++color) {
+
+    std::vector<size_t> num_ghost_owners;
+
+    for(auto is: context_.coloring_map()) {
+      size_t idx_space = is.first;
+
+      flecsi::coloring::coloring_info_t color_info =
+          coloring_info[idx_space][color];
+
+      num_ghost_owners.push_back(color_info.ghost_owners.size());
+    } // for idx_space
+
+    size_t num_idx_spaces = context_.coloring_map().size();
    
     //-----------------------------------------------------------------------//
     // data serialization:
@@ -289,18 +301,16 @@ runtime_driver(
    //add region requirements to the setup_rank_context_launcher
    //-----------------------------------------------------------------------//
    
-    arg_map.set_point(Legion::DomainPoint(color),
+    Legion::TaskLauncher setup_rank_context_launcher(setup_rank_context_id,
         Legion::TaskArgument(args_serializers[color].get_buffer(),
                              args_serializers[color].get_used_bytes()));
+    setup_rank_context_launcher.tag = MAPPER_FORCE_RANK_MATCH;
+
+    Legion::DomainPoint point(color);
+    must_epoch_launcher.add_single_task(point, setup_rank_context_launcher);
   } // for color
 
   // Launch the setup_rank_context tasks
-  Legion::IndexTaskLauncher index_launcher(setup_rank_context_id,
-      data.color_domain(), Legion::TaskArgument(nullptr, 0), arg_map);
-  index_launcher.tag = MAPPER_FORCE_RANK_MATCH;
-
-  must_epoch_launcher.add_index_task(index_launcher);
-  must_epoch_launcher.launch_domain = data.color_domain();
   auto future = runtime->execute_must_epoch(ctx, must_epoch_launcher);
   bool silence_warnings = true;
   future.wait_all_results(silence_warnings);
