@@ -336,8 +336,11 @@ __flecsi_internal_legion_task(ghost_copy_task, void) {
   Legion::Domain ghost_domain = runtime->get_index_space_domain(
       ctx, regions[1].get_logical_region().get_index_space());
 
-  //for (Legion::Domain::DomainPointIterator itr(owner_domain); itr; itr++)
-  //  std::cout << "owner has " << itr.p[0] << "," << itr.p[1]  << std::endl;
+  for (Legion::Domain::DomainPointIterator itr(owner_domain); itr; itr++)
+    std::cout << "owner has " << itr.p[0] << "," << itr.p[1]  << std::endl;
+
+  for (Legion::Domain::DomainPointIterator itr(ghost_domain); itr; itr++)
+    std::cout << "ghost has " << itr.p[0] << "," << itr.p[1]  << std::endl;
 
   // For each field, copy data from shared to ghost
   for (auto fid : task->regions[0].privilege_fields) {
@@ -354,8 +357,8 @@ __flecsi_internal_legion_task(ghost_copy_task, void) {
     for (Legion::Domain::DomainPointIterator itr(ghost_domain); itr; itr++) {
       auto ghost_ptr = Legion::DomainPoint::from_point<2>(itr.p);
       LegionRuntime::Arrays::Point<2> owner_location = position_ref_acc.read(ghost_ptr);
-    //  std::cout << itr.p[0] << "," << itr.p[1] << " points to "
-    //      << owner_location.x[0] << "," << owner_location.x[1] << std::endl;
+      std::cout << itr.p[0] << "," << itr.p[1] << " points to "
+          << owner_location.x[0] << "," << owner_location.x[1] << std::endl;
       auto owner_ptr = Legion::DomainPoint::from_point<2>(owner_location);
       // FIXME: hack until gather copies are implemented
       switch (field_info.size) {
