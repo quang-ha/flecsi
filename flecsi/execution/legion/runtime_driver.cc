@@ -431,13 +431,13 @@ setup_rank_context_task(
   // Add additional setup.
   context_t & context_ = context_t::instance();
 
-  clog_assert(task->arglen > 0, "setup_rank_context_task called without arguments");
+  clog_assert(task->local_arglen > 0, "setup_rank_context_task called without arguments");
 
   //---------------------------------------------------------------------//
   // Deserialize task arguments
   // --------------------------------------------------------------------//
 
-  Legion::Deserializer args_deserializer(task->args, task->arglen);
+  Legion::Deserializer args_deserializer(task->local_args, task->local_arglen);
  
   // #2 deserialize field info
   size_t num_fields;

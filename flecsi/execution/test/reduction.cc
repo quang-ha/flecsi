@@ -26,6 +26,7 @@ double local_value_task(
   int my_color;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_color);
 #endif
+std::cout << "LVT " << my_color << std::endl;
   return static_cast<double>((my_color+1) * cycle);
 }
 
