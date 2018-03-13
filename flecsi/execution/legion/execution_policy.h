@@ -314,15 +314,17 @@ struct legion_execution_policy_t {
           // Enqueue the task.
           clog(trace) << "Execute flecsi/legion task " << KEY << " on rank "
                       << legion_runtime->find_local_MPI_rank() << std::endl;
-          Legion::MustEpochLauncher must_epoch_launcher;
-          must_epoch_launcher.add_index_task(index_task_launcher);
 
           Legion::Future future;
           Legion::FutureMap future_map;
 
-          if (redop_id == 0)
-              future_map = legion_runtime->execute_must_epoch(legion_context,
-                  must_epoch_launcher);
+          if (redop_id == 0) {
+            Legion::MustEpochLauncher must_epoch_launcher;
+            must_epoch_launcher.add_index_task(index_task_launcher);
+            must_epoch_launcher.launch_domain = launch_domain;
+            future_map = legion_runtime->execute_must_epoch(legion_context,
+                must_epoch_launcher);
+          }
           else
             future = legion_runtime->execute_index_space(legion_context,
                 index_task_launcher, redop_id);
