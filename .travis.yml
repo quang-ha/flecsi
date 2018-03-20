@@ -70,7 +70,7 @@ before_install:
 
 script:
   - cp -vr docker ${HOME}/docker
-  - sed -i "1s/fedora/${DISTRO}/" ${HOME}/docker/Dockerfile
+  - sed -i "1s/fedora/${DISTRO}_${TRAVIS_BRANCH}/" ${HOME}/docker/Dockerfile
   - cd ../../
   - mv -v ${TRAVIS_REPO_SLUG} $HOME/docker
   - cp -r $HOME/.ccache ${HOME}/docker/ccache
