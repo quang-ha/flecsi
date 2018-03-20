@@ -24,6 +24,8 @@ ARG TRAVIS_COMMIT
 ARG TRAVIS_OS_NAME
 ARG IGNORE_NOCI
 
+RUN apt-get -qq install -y libboost-dev
+
 RUN rm -rf /home/flecsi/.ccache
 COPY flecsi /home/flecsi/flecsi
 COPY ccache/ /home/flecsi/.ccache
