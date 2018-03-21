@@ -63,6 +63,11 @@ client_hash() {
   return NAMESPACE ^ NAME;
 } // client_hash
 
+inline size_t
+client_hash(size_t namespace_hash, size_t name_hash) {
+  return namespace_hash ^ name_hash;
+} // client_hash
+
 ////////////////////////////////////////////////////////////////////////////////
 // Field data hash interface.
 ////////////////////////////////////////////////////////////////////////////////
@@ -318,15 +323,22 @@ client_adjacency_to_dimension(size_t key) {
 //! @ingroup utils
 //----------------------------------------------------------------------------//
 
-template<size_t NAME, size_t INDEX_SPACE>
+template<
+  size_t NAME,
+  size_t NAMESPACE_HASH,
+  size_t NAME_HASH,
+  size_t INDEX_SPACE>
 inline constexpr size_t
 client_internal_field_hash() {
-  return ((NAME << 8) | INDEX_SPACE) | (1ull << 63);
+  constexpr size_t INSTANCE = client_hash<NAMESPACE_HASH, NAME_HASH>();
+  return ((NAME << 32) | (INSTANCE << 16) | INDEX_SPACE) | (1ull << 63);
 } // field_hash__
 
 inline size_t
-client_internal_field_hash(size_t name, size_t index_space) {
-  return ((name << 8) | index_space) | (1ull << 63);
+client_internal_field_hash(size_t name, size_t namespace_hash,
+  size_t name_hash, size_t index_space) {
+  const size_t instance = client_hash(namespace_hash, name_hash);
+  return ((name << 32) | (instance << 16) | index_space) | (1ull << 63);
 } // field_hash__
 
 inline constexpr size_t

@@ -316,7 +316,7 @@ struct data_client_policy_handler__<topology::mesh_topology__<POLICY_TYPE>> {
     h.namespace_hash = NAMESPACE_HASH;
 
     const size_t key = utils::hash::client_hash<NAMESPACE_HASH, NAME_HASH>();
-    std::cout << "key: " << key << std::endl;
+    std::cout << "This is really the key: " << key << std::endl;
     std::cout << "name: " << NAME_HASH << std::endl;
     std::cout << "namespace: " << NAMESPACE_HASH << std::endl;
 
@@ -340,7 +340,7 @@ struct data_client_policy_handler__<topology::mesh_topology__<POLICY_TYPE>> {
           h.type_hash,
           utils::hash::client_internal_field_hash(
               utils::const_string_t("__flecsi_internal_entity_data__").hash(),
-              ent.index_space));
+              h.namespace_hash, h.name_hash, ent.index_space));
 
       if (fi) {
         ent.fid = fi->fid;
@@ -350,7 +350,7 @@ struct data_client_policy_handler__<topology::mesh_topology__<POLICY_TYPE>> {
           h.type_hash,
           utils::hash::client_internal_field_hash(
               utils::const_string_t("__flecsi_internal_entity_id__").hash(),
-              ent.index_space));
+              h.namespace_hash, h.name_hash, ent.index_space));
 
       if (fi) {
         ent.id_fid = fi->fid;
@@ -400,8 +400,7 @@ struct data_client_policy_handler__<topology::mesh_topology__<POLICY_TYPE>> {
           h.type_hash,
           utils::hash::client_internal_field_hash(
               utils::const_string_t("__flecsi_internal_adjacency_offset__")
-                  .hash(),
-              hi.index_space));
+                  .hash(), h.namespace_hash, h.name_hash, hi.index_space));
 
       if (fi) {
         adj.offset_fid = fi->fid;
@@ -411,8 +410,7 @@ struct data_client_policy_handler__<topology::mesh_topology__<POLICY_TYPE>> {
           h.type_hash,
           utils::hash::client_internal_field_hash(
               utils::const_string_t("__flecsi_internal_adjacency_index__")
-                  .hash(),
-              hi.index_space));
+                  .hash(), h.namespace_hash, h.name_hash, hi.index_space));
 
       if (fi) {
         adj.index_fid = fi->fid;
@@ -459,8 +457,7 @@ struct data_client_policy_handler__<topology::mesh_topology__<POLICY_TYPE>> {
           h.type_hash,
           utils::hash::client_internal_field_hash(
               utils::const_string_t("__flecsi_internal_index_subspace_index__")
-                  .hash(),
-              si.index_subspace));
+                  .hash(), h.namespace_hash, h.name_hash, si.index_subspace));
 
       if (fi) {
         iss.index_fid = fi->fid;
@@ -555,7 +552,7 @@ struct data_client_policy_handler__<topology::set_topology__<POLICY_TYPE>> {
           h.type_hash,
           utils::hash::client_internal_field_hash(
               utils::const_string_t("__flecsi_internal_entity_data__").hash(),
-              ent.index_space));
+              h.namespace_hash, h.name_hash, ent.index_space));
 
       if (fi) {
         ent.fid = fi->fid;
@@ -587,6 +584,7 @@ struct data_client_policy_handler__<topology::set_topology__<POLICY_TYPE>> {
 
 template<typename DATA_POLICY>
 struct data_client_interface__ {
+
   //--------------------------------------------------------------------------//
   //! Register a data client with the FleCSI runtime.
   //!
