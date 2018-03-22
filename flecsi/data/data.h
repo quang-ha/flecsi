@@ -191,7 +191,7 @@
   /* WARNING: This macro returns a handle. Don't add terminations! */          \
   flecsi_get_handle(                                                           \
       flecsi_get_client_handle(                                                \
-          flecsi::data::global_data_client_t, nspace, name),                   \
+        flecsi::data::global_data_client_t, global_client, global_client),     \
       nspace, name, data_type, global, version)
 
 /*!
@@ -209,13 +209,13 @@
   @ingroup data
  */
 
-#define flecsi_get_color(nspace, name, data_type, version)                    \
+#define flecsi_get_color(nspace, name, data_type, version)                     \
   /* MACRO IMPLEMENTATION */                                                   \
                                                                                \
   /* WARNING: This macro returns a handle. Don't add terminations! */          \
   flecsi_get_handle(                                                           \
       flecsi_get_client_handle(                                                \
-          flecsi::data::color_data_client_t, nspace, name),                   \
+          flecsi::data::color_data_client_t, nspace, name),                    \
       nspace, name, data_type, color, version)
 
 /*!

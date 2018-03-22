@@ -8,11 +8,15 @@
 //! @date Initial file creation: Dec 7, 2016
 //----------------------------------------------------------------------------//
 
+#include <flecsi/data/data.h>
 #include <flecsi/data/data_client.h>
 #include <flecsi/data/storage.h>
 
 namespace flecsi {
 namespace data {
+
+// FIXME: IRINA This probably needs to move somewhere else.
+flecsi_register_data_client(global_data_client_t, global_client, clobal_client);
 
 // Move constructor.
 data_client_t::data_client_t(data_client_t && dc) : data_client_t() {

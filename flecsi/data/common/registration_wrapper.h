@@ -98,6 +98,7 @@ struct client_registration_wrapper__<
     flecsi::topology::mesh_topology__<POLICY_TYPE>,
     NAMESPACE_HASH,
     NAME_HASH> {
+
   using CLIENT_TYPE = typename flecsi::topology::mesh_topology__<POLICY_TYPE>;
 
   //--------------------------------------------------------------------------//

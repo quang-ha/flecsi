@@ -102,6 +102,7 @@ entity set - contains an iterable set of entities. Support set operations such
 
  @ingroup mesh-topology
  */
+
 template<class MESH_TYPE>
 class mesh_topology__
     : public mesh_topology_base__<
@@ -178,6 +179,7 @@ public:
   // tree topologies. It is also useful for detecting illegal usage, such as
   // when a user adds data members.
   //--------------------------------------------------------------------------//
+
   using type_identifier_t = mesh_topology__;
 
   // Don't allow the mesh to be copied or copy constructed
