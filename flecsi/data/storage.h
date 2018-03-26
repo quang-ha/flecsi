@@ -17,6 +17,7 @@
 
 #include <cinchlog.h>
 #include <functional>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -96,47 +97,54 @@ struct storage__ : public STORAGE_POLICY {
   //--------------------------------------------------------------------------//
   //! Register a client with the runtime.
   //!
-  //! @param type_hash The data client indentifier hash.
+  //! @param type_key The data client indentifier hash.
   //! @param key        The identifier hash.
   //! @param callback   The registration call back function.
   //--------------------------------------------------------------------------//
 
   bool register_client(
-      size_t type_hash,
+      size_t type_key,
       size_t key,
       const registration_function_t & callback) {
-    if (client_registry_.find(type_hash) != client_registry_.end()) {
-      clog_assert(
-          client_registry_[type_hash].find(key) ==
-              client_registry_[type_hash].end(),
-          "client key already exists");
-    } // if
 
-    client_registry_[type_hash][key] =
+    auto iter = client_registry_.find(type_key);
+
+    if(iter != client_registry_.end()) {
+      clog_assert(iter->second.find(key) == iter->second.end(),
+        "\nThe data_client instance you are trying to register with key " <<
+        key << " already exists");
+
+      iter->second[key] =
         std::make_pair(unique_fid_t::instance().next(), callback);
+    }
+    else {
+      client_registry_[type_key][key] =
+        std::make_pair(unique_fid_t::instance().next(), callback);
+    } // if
 
     return true;
   } // register_client
 
-  bool register_client_fields(size_t type_hash) {
-    return registered_client_fields_.insert(type_hash).second;
+  bool register_client_fields(size_t type_key, size_t instance_key) {
+    return registered_client_fields_.insert(
+      std::make_pair(type_key, instance_key)).second;
   }
 
   //--------------------------------------------------------------------------//
   //! Search for a client at the runtime.
   //!
-  //! @param type_hash The data client indentifier hash.
+  //! @param type_key The data client indentifier hash.
   //--------------------------------------------------------------------------//
 
-  void assert_client_exists(size_t type_hash, size_t client_hash) {
-    clog_assert(client_registry_.find(type_hash) != client_registry_.end(),
+  void assert_client_exists(size_t type_key, size_t instance_key) {
+    clog_assert(client_registry_.find(type_key) != client_registry_.end(),
         "\nThe data_client type you are trying to access with key " << 
-        type_hash << " does not exist!" <<
+        type_key << " does not exist!" <<
         "\nMake sure it has been properly registered!");
-    clog_assert(client_registry_[type_hash].find(client_hash) !=
-      client_registry_[type_hash].end(),
+    clog_assert(client_registry_[type_key].find(instance_key) !=
+      client_registry_[type_key].end(),
       "\nThe data_client instance you are trying to access with key " << 
-      client_hash << " does not exist!" <<
+      instance_key << " does not exist!" <<
       "\nMake sure it has been properly registered!");
   } // register_client
 
@@ -173,7 +181,7 @@ private:
   storage__(storage__ &&) = delete;
   storage__ & operator=(storage__ &&) = delete;
 
-  std::unordered_set<size_t> registered_client_fields_;
+  std::set<std::pair<size_t, size_t>> registered_client_fields_;
   std::unordered_map<size_t, field_entry_t> field_registry_;
   std::unordered_map<size_t, client_entry_t> client_registry_;
 

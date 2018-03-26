@@ -54,6 +54,7 @@ void driver(int argc, char ** argv) {
   // memory space, at which point it will be accessible by the user.
 
   auto m = flecsi_get_client_handle(mesh_t, clients, mesh);
+  std::cerr << "HERE" << std::endl;
 
   // Task execution is as usual...
 
