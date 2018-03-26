@@ -131,10 +131,9 @@ int main(int argc, char ** argv) {
   // Initialize the cinchlog runtime
   clog_init(tags);
    
-   //-------------------------------------------------------------------------//
-   // DONE CLOG INIT
-   //-------------------------------------------------------------------------//
-   
+  //--------------------------------------------------------------------------//
+  // DONE CLOG INIT
+  //--------------------------------------------------------------------------//
 
   // Execute the flecsi runtime.
   auto retval = flecsi::execution::context_t::instance().initialize(argc, argv);

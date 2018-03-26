@@ -1097,6 +1097,7 @@ private:
   //! \remark this is the general one that gets instantiated even though
   //! it may never get called
   //--------------------------------------------------------------------------//
+
   template<size_t Domain, size_t DimensionToBuild, size_t UsingDimension>
   typename std::enable_if<
       (UsingDimension <= 1 || UsingDimension > MESH_TYPE::num_dimensions)>::type
@@ -1116,6 +1117,7 @@ private:
   //! @tparam DimensionToBuild topological dimension to build
   //! @tparam UsingDimension using topological dimension to build
   //--------------------------------------------------------------------------//
+
   template<size_t Domain, size_t DimensionToBuild, size_t UsingDimension>
   typename std::enable_if<
       (UsingDimension > 1 && UsingDimension <= MESH_TYPE::num_dimensions)>::type

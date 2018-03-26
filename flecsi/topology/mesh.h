@@ -102,6 +102,28 @@
       flecsi::topology::domain_<domain>, from_type, to_type>
 
 //----------------------------------------------------------------------------//
+//! @def flecsi_connectivity
+//!
+//! This macro defines a connectivity type suitable for populating the
+//! \em connectivities parameter for a FleCSI specialization for
+//! connectivities between entities of the same topological dimension.
+//!
+//! @param index
+//! @param domain
+//! @param type
+//! @param dimension
+//!
+//! @ingroup topology
+//----------------------------------------------------------------------------//
+
+#define flecsi_connectivity_self(index, domain, type, dimension)               \
+  /* MACRO IMPLEMENTATION */                                                   \
+                                                                               \
+  std::tuple<                                                                  \
+      flecsi::topology::index_space_<index>,                                   \
+      flecsi::topology::domain_<domain>, type, type, dimension>
+    
+//----------------------------------------------------------------------------//
 //! @def flecsi_register_bindings
 //!
 //! This macro is a convenience interface to std::tuple. It is provided for
