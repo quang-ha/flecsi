@@ -68,7 +68,7 @@ matrix:
 before_install:
  - git fetch --unshallow && git fetch --tags #for versioning
 
-script:
+script: travis_wait 
   - cp -vr docker ${HOME}/docker
   - sed -i "1s/fedora/${DISTRO}/" ${HOME}/docker/Dockerfile
   - cd ../../
