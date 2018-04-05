@@ -17,7 +17,7 @@
 #include<flecsi-tutorial/specialization/mesh/mesh.h>
 #include<flecsi/data/data.h>
 #include<flecsi/execution/execution.h>
-#include<flecsi-tutorial/specialization/io/vtk/structuredGrid.h>
+#include<flecsi-tutorial/specialization/io/vtk/unstructuredGrid.h>
 
 using namespace flecsi;
 using namespace flecsi::tutorial;
@@ -48,7 +48,8 @@ flecsi_register_task(print_field, example, loc, single);
 void output_field(mesh<ro> mesh, field<ro> f) 
 {
 
-  vtkOutput::StructuredGrid temp(256,1,1);
+  vtkOutput::UnstructuredGrid temp;
+  // temp(256,1,1);
   double *cellData = new double[256];
 
   int count = 0;
@@ -61,9 +62,9 @@ void output_field(mesh<ro> mesh, field<ro> f)
     cellData[count] = f(c);
     count++;
   } // for
-  temp.pushPointsToGrid();
+  temp.pushPointsToGrid(VTK_VERTEX);
 
-  temp.addScalarCellData("cell-data-scalar", 256, cellData);
+  temp.addScalarData("cell-data-scalar", 256, cellData);
  //  //temp.addScalarCellData("cell-data-scalar", 256, f);
   temp.write("testVTK");
 
