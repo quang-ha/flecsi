@@ -47,30 +47,50 @@ flecsi_register_task(print_field, example, loc, single);
 
 void output_field(mesh<ro> mesh, field<ro> f) 
 {
-
   vtkOutput::UnstructuredGrid temp;
-  // temp(256,1,1);
   double *cellData = new double[256];
+  double *cellID = new double[256];
 
   int count = 0;
+
   for(auto c: mesh.cells(owned)) {
 
-    double pnt[3];
-    pnt[0]=c->id(); pnt[1]=0; pnt[2]=0;
-    temp.addPoint(pnt);
+    //std::vector<double> pointCoords;
+    double * pointCoords = new double[8];
+    int vertexCount = 0;
+    for(auto v: mesh.vertices(c)) {
+      auto p = v->coordinates();
+      double x = std::get<0>(p);
+      double y = std::get<1>(p);
+     // pointCoords.push_back(x);
+      //pointCoords.push_back(y);
+      pointCoords[vertexCount*2+0] = x;
+      pointCoords[vertexCount*2+1] = y;
+      std::cout << x << ", " << y << std::endl;
+      vertexCount++;
+    }
+    
+    std::cout << std::endl << std::endl;
+
+    temp.uGrid->InsertNextCell(VTK_QUAD, vertexCount*2, pointCoords);
+    
+    //double pnt[3];
+    //pnt[0]=c->id(); pnt[1]=0; pnt[2]=0;
+    //temp.addPoint(pnt);
+    cellID[count] = c->id();
 
     cellData[count] = f(c);
     count++;
   } // for
-  temp.pushPointsToGrid(VTK_VERTEX);
+  //temp.pushPointsToGrid(VTK_VERTEX);
 
+  temp.addScalarData("cell-id", 256, cellID);
   temp.addScalarData("cell-data-scalar", 256, cellData);
- //  //temp.addScalarCellData("cell-data-scalar", 256, f);
   temp.write("testVTK");
 
-  //if (cellData != NULL)
-  //  delete []cellData;
-  //cellData = NULL;
+  if (cellData != NULL)
+   delete []cellData;
+  cellData = NULL;
 } // print_field
 
 

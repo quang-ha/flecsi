@@ -29,7 +29,7 @@ namespace vtkOutput
 class UnstructuredGrid
 {
 	vtkSmartPointer<vtkXMLPUnstructuredGridWriter> writer;
-	vtkSmartPointer<vtkUnstructuredGrid> uGrid;
+	//vtkSmartPointer<vtkUnstructuredGrid> uGrid;
 
 	vtkSmartPointer<vtkPoints> pnts;
   	vtkSmartPointer<vtkCellArray> cells;
@@ -38,6 +38,7 @@ class UnstructuredGrid
   public:
 	UnstructuredGrid();
 	~UnstructuredGrid(){};
+	vtkSmartPointer<vtkUnstructuredGrid> uGrid;
 
 	vtkSmartPointer<vtkUnstructuredGrid> getUGrid(){ return uGrid; }
 
