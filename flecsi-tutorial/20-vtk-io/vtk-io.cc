@@ -18,6 +18,7 @@
 #include<flecsi/data/data.h>
 #include<flecsi/execution/execution.h>
 #include<flecsi-tutorial/specialization/io/vtk/unstructuredGrid.h>
+#include <vtkQuad.h>
 
 using namespace flecsi;
 using namespace flecsi::tutorial;
@@ -52,37 +53,55 @@ void output_field(mesh<ro> mesh, field<ro> f)
   double *cellID = new double[256];
 
   int count = 0;
+  int vertexCount = 0;
 
+
+  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
   for(auto c: mesh.cells(owned)) {
 
-    //std::vector<double> pointCoords;
     double * pointCoords = new double[8];
-    int vertexCount = 0;
-    for(auto v: mesh.vertices(c)) {
-      auto p = v->coordinates();
-      double x = std::get<0>(p);
-      double y = std::get<1>(p);
-     // pointCoords.push_back(x);
-      //pointCoords.push_back(y);
-      pointCoords[vertexCount*2+0] = x;
-      pointCoords[vertexCount*2+1] = y;
-      std::cout << x << ", " << y << std::endl;
-      vertexCount++;
-    }
     
+
+    vtkCell *cell;
+    vtkSmartPointer<vtkPoints> pnts;
+
+    vtkIdType pointIds[4];
+
+    for(auto v: mesh.vertices(c)) 
+    {
+      int localVertexCount = 0;
+
+      auto p = v->coordinates();
+      double pt[3] = {0, 0, 0};
+
+      pt[0] = std::get<0>(p);
+      pt[1] = std::get<1>(p);
+      std::cout << pt[0] << ", " << pt[0] << std::endl;
+
+      temp.addPoint(pt);
+
+      pointIds[localVertexCount] = vertexCount;
+      vertexCount++;  
+      localVertexCount++;
+    }
+    temp.uGrid->InsertNextCell( VTK_QUAD, 4, pointIds);
     std::cout << std::endl << std::endl;
 
-    temp.uGrid->InsertNextCell(VTK_QUAD, vertexCount*2, pointCoords);
+    // // Line
+    // double pnt[3];
+    // pnt[0]=c->id(); pnt[1]=0; pnt[2]=0;
+    // temp.addPoint(pnt);
     
-    //double pnt[3];
-    //pnt[0]=c->id(); pnt[1]=0; pnt[2]=0;
-    //temp.addPoint(pnt);
     cellID[count] = c->id();
-
     cellData[count] = f(c);
+
     count++;
   } // for
-  //temp.pushPointsToGrid(VTK_VERTEX);
+  
+  // // Line
+  // temp.pushPointsToGrid(VTK_VERTEX);
+
+  temp.pushPointsToGrid(VTK_QUAD);
 
   temp.addScalarData("cell-id", 256, cellID);
   temp.addScalarData("cell-data-scalar", 256, cellData);

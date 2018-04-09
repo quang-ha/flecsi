@@ -21,9 +21,31 @@
 #include <vtkIntArray.h>
 #include <vtkDataArray.h>
 #include <vtkGenericDataArray.h>
+#include <limits>
 
 namespace vtkOutput
 {
+
+template<typename T>
+
+struct point
+{
+	float x, y, z;
+
+	point(){ x=y=z=0; }
+	point(float _x, float _y, float _z){ x=_x; y=_y; z=_z; }
+
+
+	bool equal(float _x, float _y, float _z)
+	{
+		bool match = std::fabs(x - _x) < std::numeric_limits<float>::epsilon();
+		match = match && std::fabs(y - _y) < std::numeric_limits<float>::epsilon();
+		match = match && std::fabs(z - _z) < std::numeric_limits<float>::epsilon();
+		return match;
+	}
+};
+
+
 
 
 class UnstructuredGrid
