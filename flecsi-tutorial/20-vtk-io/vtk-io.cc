@@ -18,7 +18,10 @@
 #include<flecsi/data/data.h>
 #include<flecsi/execution/execution.h>
 #include<flecsi-tutorial/specialization/io/vtk/unstructuredGrid.h>
+#include "/home/pascal/projects/NGC/flecsi/flecsi-tutorial/specialization/io/vtk/utils.h"
 #include <vtkQuad.h>
+#include <map>
+
 
 using namespace flecsi;
 using namespace flecsi::tutorial;
@@ -48,68 +51,49 @@ flecsi_register_task(print_field, example, loc, single);
 
 void output_field(mesh<ro> mesh, field<ro> f) 
 {
-  vtkOutput::UnstructuredGrid temp;
-  double *cellData = new double[256];
-  double *cellID = new double[256];
+  vtkOutput::UnstructuredGrid tutorial2dMesh;
 
-  int count = 0;
-  int vertexCount = 0;
+  // 
+  // Find the list of points and insert them in pnts - All f this to avoid inserting duplicate points
+  std::map < size_t, vtkOutput::_point > indexPoint;
 
-
-  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
   for(auto c: mesh.cells(owned)) {
+    for(auto v: mesh.vertices(c)) {
+      auto p = v->coordinates();
+      indexPoint.insert( std::pair< size_t, vtkOutput::_point > ( v->coordinateID(), vtkOutput::_point( std::get<0>(p), std::get<1>(p) ) ) );
+    }
+  }
 
-    double * pointCoords = new double[8];
-    
+  for (int i=0; i<indexPoint.size(); i++)
+    tutorial2dMesh.addVertex( indexPoint[i].coords );
 
-    vtkCell *cell;
-    vtkSmartPointer<vtkPoints> pnts;
 
-    vtkIdType pointIds[4];
+  //
+  // Insert mesh info
+  std::vector<double> cellData, cellID;
 
+  for(auto c: mesh.cells(owned)) {
+    //
+    // Insert Cell
+    vtkSmartPointer<vtkQuad> quad = vtkSmartPointer<vtkQuad>::New();
+    int localVertexCount = 0;
     for(auto v: mesh.vertices(c)) 
     {
-      int localVertexCount = 0;
-
-      auto p = v->coordinates();
-      double pt[3] = {0, 0, 0};
-
-      pt[0] = std::get<0>(p);
-      pt[1] = std::get<1>(p);
-      std::cout << pt[0] << ", " << pt[0] << std::endl;
-
-      temp.addPoint(pt);
-
-      pointIds[localVertexCount] = vertexCount;
-      vertexCount++;  
-      localVertexCount++;
+      quad->GetPointIds()->SetId(localVertexCount,v->coordinateID()); localVertexCount++;
     }
-    temp.uGrid->InsertNextCell( VTK_QUAD, 4, pointIds);
-    std::cout << std::endl << std::endl;
-
-    // // Line
-    // double pnt[3];
-    // pnt[0]=c->id(); pnt[1]=0; pnt[2]=0;
-    // temp.addPoint(pnt);
+    tutorial2dMesh.addCell(quad);
     
-    cellID[count] = c->id();
-    cellData[count] = f(c);
-
-    count++;
+    // Insert Data
+    cellData.push_back( f(c) );
+    cellID.push_back( c->id() );
   } // for
   
-  // // Line
-  // temp.pushPointsToGrid(VTK_VERTEX);
 
-  temp.pushPointsToGrid(VTK_QUAD);
+  tutorial2dMesh.pushTopologyToGrid(VTK_QUAD);
+  tutorial2dMesh.addScalarData("cell-id", cellID.size(), &cellID[0], 1);
+  tutorial2dMesh.addScalarData("cell-data-scalar", cellData.size(), &cellData[0], 1);
+  tutorial2dMesh.write("tutorialMesh");
 
-  temp.addScalarData("cell-id", 256, cellID);
-  temp.addScalarData("cell-data-scalar", 256, cellData);
-  temp.write("testVTK");
-
-  if (cellData != NULL)
-   delete []cellData;
-  cellData = NULL;
 } // print_field
 
 

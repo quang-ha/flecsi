@@ -14,8 +14,10 @@
 #include <vtkXMLPUnstructuredGridWriter.h>
 #include <vtkSOADataArrayTemplate.h>
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkPoints.h>
 #include <vtkPointData.h>
+
 #include <vtkMPIController.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
 #include <vtkIntArray.h>
@@ -51,7 +53,7 @@ struct point
 class UnstructuredGrid
 {
 	vtkSmartPointer<vtkXMLPUnstructuredGridWriter> writer;
-	//vtkSmartPointer<vtkUnstructuredGrid> uGrid;
+	vtkSmartPointer<vtkUnstructuredGrid> uGrid;
 
 	vtkSmartPointer<vtkPoints> pnts;
   	vtkSmartPointer<vtkCellArray> cells;
@@ -60,19 +62,23 @@ class UnstructuredGrid
   public:
 	UnstructuredGrid();
 	~UnstructuredGrid(){};
-	vtkSmartPointer<vtkUnstructuredGrid> uGrid;
+	
 
 	vtkSmartPointer<vtkUnstructuredGrid> getUGrid(){ return uGrid; }
 
 	// Topology
+	template <typename T> void addVertex(T *pointData);
+	template <typename T> void addCell(vtkSmartPointer<T> cellObj);
 	template <typename T> void addPoint(T *pointData);
-	void pushPointsToGrid(int cellType);
-	void setPoints(vtkSmartPointer<vtkPoints> _pnts, vtkSmartPointer<vtkCellArray> _cells, int cellType);
+	void pushTopologyToGrid(int cellType);
+	void setTopology(vtkSmartPointer<vtkPoints> _pnts, vtkSmartPointer<vtkCellArray> _cells, int cellType);
 
 	// Data
-	template <typename T> void addScalarData(std::string scalarName, int numPoints, T *data);
-	template <typename T> void addVectorData(std::string scalarName, int numPoints, int numComponents, T *data);
 	template <typename T> void addFieldScalar(std::string fieldName, T *data);
+
+	template <typename T> void addScalarData(std::string scalarName, int numPoints, T *data, int kind=0);
+	template <typename T> void addVectorData(std::string scalarName, int numPoints, int numComponents, T *data, int kind=0);
+	
 
 	// Writing
 	void writeParts(int numPieces, int startPiece, int SetEndPiece, std::string fileName);
@@ -94,25 +100,40 @@ inline UnstructuredGrid::UnstructuredGrid()
 
 
 
+
 //
 // Topology
+template <typename T> 
+inline void UnstructuredGrid::addVertex(T *pointData)
+{
+	pnts->InsertNextPoint(pointData);
+}
+
+
+template <typename T> 
+inline void UnstructuredGrid::addCell(vtkSmartPointer<T> cellObj)
+{
+	cells->InsertNextCell(cellObj);
+}
+
+
+
 template <typename T> 
 inline void UnstructuredGrid::addPoint(T *pointData)
 {
 	pnts->InsertPoint(idx, pointData);
-    cells->InsertNextCell(1, &idx);
+    cells->InsertNextCell(VTK_VERTEX, &idx);
     idx++;
 }
 
-
-inline void UnstructuredGrid::pushPointsToGrid(int cellType)
+inline void UnstructuredGrid::pushTopologyToGrid(int cellType)
 {
 	uGrid->SetPoints(pnts);
   	uGrid->SetCells(cellType, cells);
 }
 
 
-inline void UnstructuredGrid::setPoints(vtkSmartPointer<vtkPoints> _pnts, vtkSmartPointer<vtkCellArray> _cells, int cellType)
+inline void UnstructuredGrid::setTopology(vtkSmartPointer<vtkPoints> _pnts, vtkSmartPointer<vtkCellArray> _cells, int cellType)
 {
 	uGrid->SetPoints(_pnts);
   	uGrid->SetCells(cellType, _cells);
@@ -137,7 +158,7 @@ inline void UnstructuredGrid::addFieldScalar(std::string fieldName, T *data)
 //
 // Data
 template <typename T>
-inline void UnstructuredGrid::addScalarData(std::string varName, int numPoints, T *data)
+inline void UnstructuredGrid::addScalarData(std::string varName, int numPoints, T *data, int kind)
 {
 	vtkSOADataArrayTemplate<T>* temp = vtkSOADataArrayTemplate<T>::New();
 
@@ -145,14 +166,18 @@ inline void UnstructuredGrid::addScalarData(std::string varName, int numPoints, 
   	temp->SetNumberOfComponents(1);
   	temp->SetName(varName.c_str());
   	temp->SetArray(0, data, numPoints, false, true);
-  	uGrid->GetPointData()->AddArray(temp);
+
+  	if (kind == 0)	// point
+  		uGrid->GetPointData()->AddArray(temp);
+  	else 			// cell
+  		uGrid->GetCellData()->AddArray(temp);
 
   	temp->Delete();
 }
 
 
 template <typename T>
-inline void UnstructuredGrid::addVectorData(std::string varName, int numPoints, int numComponents, T *data)
+inline void UnstructuredGrid::addVectorData(std::string varName, int numPoints, int numComponents, T *data, int kind)
 {
 	vtkAOSDataArrayTemplate<T>* temp = vtkAOSDataArrayTemplate<T>::New();
 
@@ -160,7 +185,12 @@ inline void UnstructuredGrid::addVectorData(std::string varName, int numPoints, 
   	temp->SetNumberOfComponents(numComponents);
   	temp->SetName(varName.c_str());
   	temp->SetArray(data, numPoints*numComponents, false, true);
-  	uGrid->GetPointData()->AddArray(temp);
+
+  	if (kind == 0)	// point
+  		uGrid->GetPointData()->AddArray(temp);
+  	else 			// cell
+  		uGrid->GetCellData()->AddArray(temp);
+
 
   	temp->Delete();
 }
@@ -191,6 +221,7 @@ inline void UnstructuredGrid::write(std::string fileName, int parallel)
     writer->SetDataModeToBinary();
     writer->SetCompressor(nullptr);
 	writer->SetFileName(outputFilename.c_str());
+
 
 	#if VTK_MAJOR_VERSION <= 5
         writer->SetInput(uGrid);
