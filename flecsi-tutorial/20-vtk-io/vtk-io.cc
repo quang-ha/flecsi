@@ -76,6 +76,7 @@ void output_field(mesh<ro> mesh, field<ro> f)
     tutorial2dMesh.addVertex( &(indexPoint[i])[0] );
 
 
+
   //
   // Insert mesh info
   std::vector<double> cellData, cellID;
@@ -84,12 +85,14 @@ void output_field(mesh<ro> mesh, field<ro> f)
     //
     // Insert Cell
     vtkSmartPointer<vtkPolygon> quad = vtkSmartPointer<vtkPolygon>::New();
+    
     quad->GetPointIds()->SetNumberOfIds(4);
     int localVertexCount = 0;
     for(auto v: mesh.vertices(c)) 
     {
       quad->GetPointIds()->SetId(localVertexCount,v->coordinateID()); localVertexCount++;
     }
+
     tutorial2dMesh.addCell(quad);
     
     // Insert Data
