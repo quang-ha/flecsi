@@ -20,6 +20,7 @@
 #include<flecsi-tutorial/specialization/io/vtk/unstructuredGrid.h>
 #include "/home/pascal/projects/NGC/flecsi/flecsi-tutorial/specialization/io/vtk/utils.h"
 #include <vtkQuad.h>
+#include <vtkPolygon.h>
 #include <map>
 
 
@@ -55,17 +56,24 @@ void output_field(mesh<ro> mesh, field<ro> f)
 
   // 
   // Find the list of points and insert them in pnts - All f this to avoid inserting duplicate points
-  std::map < size_t, vtkOutput::_point > indexPoint;
+  typedef std::vector<float> coords;
+  std::map < size_t, coords > indexPoint;
 
   for(auto c: mesh.cells(owned)) {
     for(auto v: mesh.vertices(c)) {
       auto p = v->coordinates();
-      indexPoint.insert( std::pair< size_t, vtkOutput::_point > ( v->coordinateID(), vtkOutput::_point( std::get<0>(p), std::get<1>(p) ) ) );
+
+      coords pt; 
+      pt.push_back(std::get<0>(p));
+      pt.push_back(std::get<1>(p));
+      pt.push_back(0);
+
+      indexPoint.insert( std::pair< size_t, coords > ( v->coordinateID(), pt ) );
     }
   }
 
   for (int i=0; i<indexPoint.size(); i++)
-    tutorial2dMesh.addVertex( indexPoint[i].coords );
+    tutorial2dMesh.addVertex( &(indexPoint[i])[0] );
 
 
   //
@@ -75,7 +83,8 @@ void output_field(mesh<ro> mesh, field<ro> f)
   for(auto c: mesh.cells(owned)) {
     //
     // Insert Cell
-    vtkSmartPointer<vtkQuad> quad = vtkSmartPointer<vtkQuad>::New();
+    vtkSmartPointer<vtkPolygon> quad = vtkSmartPointer<vtkPolygon>::New();
+    quad->GetPointIds()->SetNumberOfIds(4);
     int localVertexCount = 0;
     for(auto v: mesh.vertices(c)) 
     {
@@ -89,10 +98,10 @@ void output_field(mesh<ro> mesh, field<ro> f)
   } // for
   
 
-  tutorial2dMesh.pushTopologyToGrid(VTK_QUAD);
+  tutorial2dMesh.pushTopologyToGrid(VTK_POLYGON);
   tutorial2dMesh.addScalarData("cell-id", cellID.size(), &cellID[0], 1);
   tutorial2dMesh.addScalarData("cell-data-scalar", cellData.size(), &cellData[0], 1);
-  tutorial2dMesh.write("tutorialMesh");
+  tutorial2dMesh.write("tutorialMeshPoly");
 
 } // print_field
 
