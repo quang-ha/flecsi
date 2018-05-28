@@ -36,4 +36,5 @@ set(control_SOURCES
 cinch_add_unit(control
   SOURCES
     test/control.cc
+  FOLDER "Tests/Control"
 )
